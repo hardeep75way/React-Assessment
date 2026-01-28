@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
@@ -23,16 +23,29 @@ import {
 } from '@mui/material';
 import { Assignment as AssignIcon, ArrowBack } from '@mui/icons-material';
 
+interface SelectOption {
+    value: string;
+    label?: string;
+}
+
+interface ApiError {
+    response?: {
+        data?: {
+            detail?: string;
+        };
+    };
+}
+
 const assignmentSchema = yup.object({
     quizId: yup.string().required('Quiz is required'),
     userIds: yup.array().of(yup.string().required()).min(1, 'Select at least one user').required('Users are required'),
-    dueDate: yup.string().nullable()
+    dueDate: yup.string().optional().nullable()
 });
 
 interface AssignmentFormData {
     quizId: string;
     userIds: string[];
-    dueDate: string | null;
+    dueDate?: string | null;
 }
 
 export default function AssignQuizPage() {
@@ -80,7 +93,7 @@ export default function AssignQuizPage() {
             setValue('userIds', []);
             setValue('dueDate', null);
         },
-        onError: (error: any) => {
+        onError: (error: ApiError) => {
             setSnackbar({
                 open: true,
                 message: error.response?.data?.detail || 'Failed to assign quiz',
@@ -89,9 +102,9 @@ export default function AssignQuizPage() {
         }
     });
 
-    const onSubmit = useCallback(handleSubmit((data) => {
+    const onSubmit = handleSubmit((data) => {
         assignMutation.mutate(data);
-    }), [assignMutation, handleSubmit]);
+    });
 
 
 
@@ -139,7 +152,7 @@ export default function AssignQuizPage() {
                                     {...field}
                                     options={quizzes?.map((q: Quiz) => ({ value: q.id, label: `${q.title} ${!q.is_published ? '(Unpublished)' : ''}` }))}
                                     value={quizzes?.find((q: Quiz) => q.id === field.value) ? { value: field.value, label: quizzes.find((q: Quiz) => q.id === field.value)?.title } : null}
-                                    onChange={(val: any) => field.onChange(val?.value)}
+                                    onChange={(val: SelectOption | null) => field.onChange(val?.value)}
                                     placeholder="Search and select a quiz..."
                                     isClearable
                                     styles={{
@@ -173,7 +186,7 @@ export default function AssignQuizPage() {
                                     isMulti
                                     options={users?.map((u: User) => ({ value: u.id, label: `${u.username} (${u.email})` }))}
                                     value={users?.filter((u: User) => field.value?.includes(u.id)).map((u: User) => ({ value: u.id, label: `${u.username} (${u.email})` }))}
-                                    onChange={(vals: any) => field.onChange(vals?.map((v: any) => v.value))}
+                                    onChange={(vals: readonly SelectOption[]) => field.onChange(vals?.map((v: SelectOption) => v.value))}
                                     placeholder="Search and select users..."
                                     styles={{
                                         control: (base) => ({

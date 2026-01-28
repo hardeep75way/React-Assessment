@@ -28,6 +28,14 @@ import {
     Delete as DeleteIcon
 } from '@mui/icons-material';
 
+interface ApiError {
+    response?: {
+        data?: {
+            detail?: string;
+        };
+    };
+}
+
 export default function ManageQuizzesPage() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
@@ -52,7 +60,7 @@ export default function ManageQuizzesPage() {
                 severity: 'success'
             });
         },
-        onError: (error: any) => {
+        onError: (error: ApiError) => {
             setSnackbar({
                 open: true,
                 message: error.response?.data?.detail || 'Failed to publish quiz',
@@ -71,7 +79,7 @@ export default function ManageQuizzesPage() {
                 severity: 'success'
             });
         },
-        onError: (error: any) => {
+        onError: (error: ApiError) => {
             setSnackbar({
                 open: true,
                 message: error.response?.data?.detail || 'Failed to delete quiz',

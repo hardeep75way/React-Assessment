@@ -30,35 +30,26 @@ export default function TakeQuiz() {
     const { id: quizId } = useParams<{ id: string }>();
     const navigate = useNavigate();
 
-    // Core State
     const [quiz, setQuiz] = useState<Quiz | null>(null);
     const [attempt, setAttempt] = useState<Attempt | null>(null);
     const [questions, setQuestions] = useState<Question[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
-    // Exam State
     const [started, setStarted] = useState(false);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [answers, setAnswers] = useState<Map<string, string>>(new Map());
     const [markedQuestions, setMarkedQuestions] = useState<Set<string>>(new Set());
     const lastSavedAnswers = useRef<Map<string, string>>(new Map());
     const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-    // Helpers
-    const webcam = useWebcam();
+    const camera = useWebcam();
     const [submitting, setSubmitting] = useState(false);
     const [showSubmitModal, setShowSubmitModal] = useState(false);
 
-    // Fetch Quiz Data
     useEffect(() => {
         if (!quizId) return;
 
         const fetchQuiz = async () => {
             try {
-                // Fetch quiz details
-                // Ideally this includes questions. If not, we might need a separate call.
-                // Assuming getById returns questions for now as per plan
                 const quizData = await quizzesApi.getById(quizId);
                 setQuiz(quizData);
                 if (quizData.questions) {
@@ -66,7 +57,6 @@ export default function TakeQuiz() {
                 }
                 setLoading(false);
             } catch (err) {
-                console.error("Failed to load quiz", err);
                 setError("Failed to load quiz metadata.");
                 setLoading(false);
             }
@@ -75,17 +65,12 @@ export default function TakeQuiz() {
         fetchQuiz();
     }, [quizId]);
 
-    // Timer Logic
-    // Real fix for Timer callback closure:
-    // We used a Ref in useExamTimer for the callback, so it's always fresh.
-    // So we can define the callback here with dependencies!
     const triggerAutoSubmit = useCallback(() => {
         if (attempt && !submitting) {
-            handleSubmitAttempt(true);
+            handleSubmitAttempt();
         }
-    }, [attempt, submitting]); // This is safe because useExamTimer uses a ref for the callback
+    }, [attempt, submitting]);
 
-    // Setup timer only when attempt starts.
     const timer = useExamTimer({
         expiresAt: attempt?.expires_at,
         onTimeUp: triggerAutoSubmit
@@ -101,72 +86,81 @@ export default function TakeQuiz() {
             setStarted(true);
             setSubmitting(false);
         } catch (err) {
-            console.error("Failed to start exam", err);
             setError("Failed to start exam session. Please try again.");
             setSubmitting(false);
         }
     };
 
-    // Optimized Saver
     const saveAnswerToServer = useCallback(async (questionId: string, answer: string) => {
         if (!attempt) return;
-
-        // Prevent redundant saves
         if (lastSavedAnswers.current.get(questionId) === answer) return;
 
         try {
             await attemptsApi.submitAnswer(attempt.id, { question_id: questionId, selected_answer: answer });
             lastSavedAnswers.current.set(questionId, answer);
         } catch (err) {
-            console.error("Failed to save answer", err);
+            // Silent fail 
         }
     }, [attempt]);
 
-    // Save on Answer Selection (Debounced)
     const handleAnswerSelect = useCallback((questionId: string, answer: string) => {
-        // Update local state immediately
         setAnswers(prev => {
             const next = new Map(prev);
             next.set(questionId, answer);
             return next;
         });
 
-        // Clear existing timeout
         if (saveTimeoutRef.current) {
             clearTimeout(saveTimeoutRef.current);
         }
 
-        // Set new debounced save
         saveTimeoutRef.current = setTimeout(() => {
             saveAnswerToServer(questionId, answer);
-        }, 1000); // 1s debounce
+        }, 1000);
     }, [saveAnswerToServer]);
 
-    // Save on Navigation
-    const handleQuestionNavigation = useCallback((newIndex: number) => {
-        // If current question has an unsaved answer, save it now
-        const currentQ = questions[currentQuestionIndex];
-        const currentAns = answers.get(currentQ?.id);
+    const handleToggleMark = (questionId: string) => {
+        setMarkedQuestions(prev => {
+            const next = new Set(prev);
+            if (next.has(questionId)) {
+                next.delete(questionId);
+            } else {
+                next.add(questionId);
+            }
+            return next;
+        });
+    };
 
-        if (currentQ && currentAns && lastSavedAnswers.current.get(currentQ.id) !== currentAns) {
-            saveAnswerToServer(currentQ.id, currentAns);
+    const handleQuestionNavigation = useCallback((newIndex: number) => {
+        const current = questions[currentQuestionIndex];
+        const currentAnswer = current && answers.get(current.id);
+
+        if (current && currentAnswer && lastSavedAnswers.current.get(current.id) !== currentAnswer) {
+            saveAnswerToServer(current.id, currentAnswer);
         }
 
         setCurrentQuestionIndex(newIndex);
     }, [questions, currentQuestionIndex, answers, saveAnswerToServer]);
 
-    const handleSubmitAttempt = async (auto = false) => {
+    useEffect(() => {
+        return () => {
+            if (saveTimeoutRef.current) {
+                clearTimeout(saveTimeoutRef.current);
+            }
+        };
+    }, []);
+
+    const handleSubmitAttempt = async () => {
         if (!attempt) return;
         setSubmitting(true);
 
-        // Final sync of any unsaved answer before submitting
-        const currentQ = questions[currentQuestionIndex];
-        const currentAns = answers.get(currentQ?.id);
-        if (currentQ && currentAns && lastSavedAnswers.current.get(currentQ.id) !== currentAns) {
+        const current = questions[currentQuestionIndex];
+        const currentAnswer = current && answers.get(current.id);
+        if (current && currentAnswer && lastSavedAnswers.current.get(current.id) !== currentAnswer) {
             try {
-                await attemptsApi.submitAnswer(attempt.id, { question_id: currentQ.id, selected_answer: currentAns });
+                await attemptsApi.submitAnswer(attempt.id, { question_id: current.id, selected_answer: currentAnswer });
             } catch (e) {
-                console.error("Final answer save failed, but proceeding with submit", e);
+                // Proceed with submit anyway
             }
         }
 
@@ -174,21 +168,15 @@ export default function TakeQuiz() {
             await attemptsApi.submitAttempt(attempt.id);
             navigate(`/result/${attempt.id}`);
         } catch (err) {
-            console.error("Failed to submit attempt", err);
             setError("Failed to submit exam. Please try again.");
             setSubmitting(false);
             setShowSubmitModal(false);
         }
     };
 
-    // Derived state
     const currentQuestion = questions[currentQuestionIndex];
-    const isNavigationAnswered = (idx: number) => {
-        if (!questions[idx]) return false;
-        return answers.has(questions[idx].id);
-    };
+    const questionIds = useMemo(() => questions.map(q => q.id), [questions]);
 
-    // Render Loading/Error
     if (loading) return (
         <Box display="flex" height="100vh" alignItems="center" justifyContent="center">
             <CircularProgress />
@@ -196,23 +184,22 @@ export default function TakeQuiz() {
     );
     if (error) return (
         <Box display="flex" height="100vh" alignItems="center" justifyContent="center" flexDirection="column" gap={2}>
-            <CancelIcon style={{ width: 64, height: 64 }} className="text-red-500" />
+            <CancelIcon sx={{ width: 64, height: 64 }} className="text-red-500" />
             <Typography variant="h5" color="text.primary">{error}</Typography>
             <Button onClick={() => window.location.reload()}>Retry</Button>
         </Box>
     );
 
-    // Start Screen (Permission Modal)
     if (!started) {
         return (
             <WebcamPermissionModal
                 isOpen={true}
                 onStartExam={handleStartExam}
-                onRequestPermission={webcam.requestPermission}
-                stream={webcam.stream}
-                hasPermission={webcam.hasPermission}
-                isLoading={webcam.isLoading}
-                error={webcam.error}
+                onRequestPermission={camera.requestPermission}
+                stream={camera.stream}
+                hasPermission={camera.hasPermission}
+                isLoading={camera.isLoading}
+                error={camera.error}
             />
         );
     }
@@ -248,15 +235,15 @@ export default function TakeQuiz() {
                 {/* Left Sidebar: Navigation & Webcam */}
                 <Box width={300} display={{ xs: 'none', lg: 'block' }} flexShrink={0}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, position: 'sticky', top: 90 }}>
-                        <WebcamPreview stream={webcam.stream} className="h-48 w-full border-2 border-white shadow-md bg-black rounded" />
+                        <WebcamPreview stream={camera.stream} className="h-48 w-full border-2 border-white shadow-md bg-black rounded" />
 
                         <QuestionNavigation
                             totalQuestions={questions.length}
                             currentIndex={currentQuestionIndex}
                             answers={answers}
                             markedQuestions={markedQuestions}
-                            questionIds={questions.map(q => q.id)}
-                            osNavigate={handleQuestionNavigation}
+                            questionIds={questionIds}
+                            onNavigate={handleQuestionNavigation}
                         />
                     </Box>
                 </Box>
@@ -270,12 +257,7 @@ export default function TakeQuiz() {
                             selectedAnswer={answers.get(currentQuestion.id)}
                             onAnswerSelect={(ans) => handleAnswerSelect(currentQuestion.id, ans)}
                             isMarked={markedQuestions.has(currentQuestion.id)}
-                            onToggleMark={() => {
-                                const next = new Set(markedQuestions);
-                                if (next.has(currentQuestion.id)) next.delete(currentQuestion.id);
-                                else next.add(currentQuestion.id);
-                                setMarkedQuestions(next);
-                            }}
+                            onToggleMark={() => handleToggleMark(currentQuestion.id)}
                         />
                     )}
 
@@ -328,7 +310,7 @@ export default function TakeQuiz() {
                         Cancel
                     </Button>
                     <Button
-                        onClick={() => handleSubmitAttempt(false)}
+                        onClick={() => handleSubmitAttempt()}
                         variant="contained"
                         color="primary"
                         disabled={submitting}

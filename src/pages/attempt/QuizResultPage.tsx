@@ -39,7 +39,6 @@ export default function QuizResult() {
     return (
 
         <div className="max-w-3xl mx-auto space-y-8">
-            {/* Score Card */}
             <div className="bg-white rounded-lg shadow-lg overflow-hidden">
                 <div className={`p-8 text-center ${result.passed ? 'bg-green-50' : 'bg-red-50'}`}>
                     <div className="flex justify-center mb-4">

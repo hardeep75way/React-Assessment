@@ -8,8 +8,17 @@ interface AuthState {
     isAuthenticated: boolean;
 }
 
+const getUserFromStorage = (): User | null => {
+    try {
+        const userStr = localStorage.getItem('user');
+        return userStr ? JSON.parse(userStr) : null;
+    } catch {
+        return null;
+    }
+};
+
 const initialState: AuthState = {
-    user: null,
+    user: getUserFromStorage(),
     accessToken: localStorage.getItem('accessToken'),
     refreshToken: localStorage.getItem('refreshToken'),
     isAuthenticated: !!localStorage.getItem('accessToken'),

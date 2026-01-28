@@ -21,24 +21,12 @@ export function useExamTimer({ durationSeconds, expiresAt, onTimeUp }: UseExamTi
             const diff = Math.max(0, Math.floor((end - now) / 1000));
             return diff;
         } else if (durationSeconds !== undefined) {
-            // For duration based, we'd need to track start time, but typically exam gives expiresAt.
-            // If only duration is provided, we assume it starts NOW (which might be wrong on refresh).
-            // Ideally we always use expiresAt from server. 
-            // If we fallback to duration, we should handle it carefully.
             return durationSeconds;
         }
         return 0;
     }, [expiresAt, durationSeconds]);
 
-    // Initial calculation
     const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
-
-    // We need total duration to calculate progress. 
-    // If expiresAt is used, we need start time to know total duration? 
-    // Or we just calculate progress based on initial timeLeft when hook mounted?
-    // A stable progress requires knowing the TOTAL duration. 
-    // Let's assume passed durationSeconds is the TOTAL duration if available.
-    // If not, we might default to max value or just not show progress accurately if info missing.
     const [totalDuration] = useState(durationSeconds || timeLeft);
 
     const onTimeUpRef = useRef(onTimeUp);

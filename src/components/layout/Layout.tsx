@@ -26,6 +26,13 @@ import ListAltIcon from '@mui/icons-material/ListAlt';
 import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 import { useState } from 'react';
 import React from 'react';
+import { Theme } from '@mui/material/styles';
+
+interface NavItem {
+    path: string;
+    label: string;
+    icon: typeof DashboardIcon;
+}
 
 const styles = {
     root: { display: 'flex' },
@@ -39,7 +46,7 @@ const styles = {
     },
 
     appBar: {
-        zIndex: (theme: any) => theme.zIndex.drawer + 1,
+        zIndex: (theme: Theme) => theme.zIndex.drawer + 1,
         bgcolor: 'white',
         color: 'text.primary',
         borderBottom: 1,
@@ -122,7 +129,7 @@ export default function Layout() {
                 </Typography>
             </Toolbar>
             <List>
-                {navItems.map((item: any) => {
+                {navItems.map((item: NavItem) => {
                     const Icon = item.icon;
                     return (
                         <ListItem key={item.path} disablePadding>
