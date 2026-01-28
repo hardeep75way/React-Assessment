@@ -3,7 +3,7 @@ import type { Attempt, AnswerSubmit, Answer } from '@/types/attempt';
 
 export const attemptsApi = {
     start: async (quizId: string): Promise<Attempt> => {
-        const response = await apiClient.post<Attempt>(`/attempts/start/${quizId}`);
+        const response = await apiClient.post<Attempt>(`/attempts/quizzes/${quizId}/start`);
         return response.data;
     },
 
@@ -17,7 +17,7 @@ export const attemptsApi = {
     },
 
     submitAnswer: async (attemptId: string, data: AnswerSubmit): Promise<Answer> => {
-        const response = await apiClient.post<Answer>(`/attempts/${attemptId}/answer`, data);
+        const response = await apiClient.post<Answer>(`/attempts/${attemptId}/answers`, data);
         return response.data;
     },
 

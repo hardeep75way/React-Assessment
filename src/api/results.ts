@@ -3,7 +3,7 @@ import type { Result, ResultWithQuiz } from '@/types/result';
 
 export const resultsApi = {
     getById: async (id: string): Promise<Result> => {
-        const response = await apiClient.get<Result>(`/results/${id}`);
+        const response = await apiClient.get<Result>(`/results/attempts/${id}`);
         return response.data;
     },
 
