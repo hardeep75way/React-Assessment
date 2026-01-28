@@ -36,6 +36,12 @@ export default function AdminDashboard() {
                     Create New Quiz
                 </Link>
                 <Link
+                    to="/admin/manage-quizzes"
+                    className="px-6 py-3 bg-purple-600 text-white rounded-md hover:bg-purple-700 font-medium shadow-sm"
+                >
+                    Manage Quizzes
+                </Link>
+                <Link
                     to="/admin/assign-quiz"
                     className="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 font-medium shadow-sm"
                 >

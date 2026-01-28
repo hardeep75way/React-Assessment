@@ -47,10 +47,12 @@ export function useExamTimer({ durationSeconds, expiresAt, onTimeUp }: UseExamTi
         onTimeUpRef.current = onTimeUp;
     }, [onTimeUp]);
 
+    // Sync timeLeft when props change
     useEffect(() => {
-        // If we use expiresAt, we poll every second to sync.
-        // If we use durationSeconds, we decrement.
+        setTimeLeft(calculateTimeLeft());
+    }, [calculateTimeLeft, expiresAt, durationSeconds]);
 
+    useEffect(() => {
         const interval = setInterval(() => {
             setTimeLeft((prev) => {
                 if (expiresAt) {
@@ -62,18 +64,22 @@ export function useExamTimer({ durationSeconds, expiresAt, onTimeUp }: UseExamTi
                     }
                     return left;
                 } else {
-                    if (prev <= 1) {
+                    if (prev <= 0) {
                         clearInterval(interval);
-                        onTimeUpRef.current?.();
+                        // Only trigger if it was ticking
                         return 0;
                     }
-                    return prev - 1;
+                    const next = prev - 1;
+                    if (next === 0) {
+                        onTimeUpRef.current?.();
+                    }
+                    return next;
                 }
             });
         }, 1000);
 
         return () => clearInterval(interval);
-    }, [expiresAt, calculateTimeLeft]);
+    }, [expiresAt, durationSeconds, calculateTimeLeft]);
 
 
     const formatTime = (seconds: number) => {

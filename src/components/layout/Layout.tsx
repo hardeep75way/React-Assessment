@@ -22,6 +22,8 @@ import HistoryIcon from '@mui/icons-material/History';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import LogoutIcon from '@mui/icons-material/Logout';
 import MenuIcon from '@mui/icons-material/Menu';
+import ListAltIcon from '@mui/icons-material/ListAlt';
+import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 import { useState } from 'react';
 import React from 'react';
 
@@ -96,7 +98,9 @@ export default function Layout() {
     const navItems = isAdmin
         ? [
             { path: '/admin/dashboard', label: 'Dashboard', icon: DashboardIcon },
-            { path: '/admin/quizzes', label: 'Quizzes', icon: QuizIcon },
+            { path: '/admin/manage-quizzes', label: 'Manage Quizzes', icon: ListAltIcon },
+            { path: '/admin/assign-quiz', label: 'Assign Quiz', icon: AssignmentIndIcon },
+            { path: '/admin/quizzes', label: 'Create Quiz', icon: QuizIcon },
         ]
         : [
             { path: '/dashboard', label: 'Dashboard', icon: DashboardIcon },
@@ -118,7 +122,7 @@ export default function Layout() {
                 </Typography>
             </Toolbar>
             <List>
-                {navItems.map((item) => {
+                {navItems.map((item: any) => {
                     const Icon = item.icon;
                     return (
                         <ListItem key={item.path} disablePadding>

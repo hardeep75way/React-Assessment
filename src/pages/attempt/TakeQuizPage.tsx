@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { attemptsApi } from '@/api/attempts';
 import { quizzesApi } from '@/api/quizzes';
@@ -42,6 +42,8 @@ export default function TakeQuiz() {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [answers, setAnswers] = useState<Map<string, string>>(new Map());
     const [markedQuestions, setMarkedQuestions] = useState<Set<string>>(new Set());
+    const lastSavedAnswers = useRef<Map<string, string>>(new Map());
+    const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     // Helpers
     const webcam = useWebcam();
@@ -105,28 +107,69 @@ export default function TakeQuiz() {
         }
     };
 
-    const handleAnswerSelect = useCallback(async (questionId: string, answer: string) => {
-        // Optimistic update
+    // Optimized Saver
+    const saveAnswerToServer = useCallback(async (questionId: string, answer: string) => {
+        if (!attempt) return;
+
+        // Prevent redundant saves
+        if (lastSavedAnswers.current.get(questionId) === answer) return;
+
+        try {
+            await attemptsApi.submitAnswer(attempt.id, { question_id: questionId, selected_answer: answer });
+            lastSavedAnswers.current.set(questionId, answer);
+        } catch (err) {
+            console.error("Failed to save answer", err);
+        }
+    }, [attempt]);
+
+    // Save on Answer Selection (Debounced)
+    const handleAnswerSelect = useCallback((questionId: string, answer: string) => {
+        // Update local state immediately
         setAnswers(prev => {
             const next = new Map(prev);
             next.set(questionId, answer);
             return next;
         });
 
-        // Sync with backend (silent)
-        if (attempt) {
-            try {
-                await attemptsApi.submitAnswer(attempt.id, { question_id: questionId, selected_answer: answer });
-            } catch (err) {
-                console.error("Failed to save answer", err);
-                // Retry logic could go here
-            }
+        // Clear existing timeout
+        if (saveTimeoutRef.current) {
+            clearTimeout(saveTimeoutRef.current);
         }
-    }, [attempt]);
+
+        // Set new debounced save
+        saveTimeoutRef.current = setTimeout(() => {
+            saveAnswerToServer(questionId, answer);
+        }, 1000); // 1s debounce
+    }, [saveAnswerToServer]);
+
+    // Save on Navigation
+    const handleQuestionNavigation = useCallback((newIndex: number) => {
+        // If current question has an unsaved answer, save it now
+        const currentQ = questions[currentQuestionIndex];
+        const currentAns = answers.get(currentQ?.id);
+
+        if (currentQ && currentAns && lastSavedAnswers.current.get(currentQ.id) !== currentAns) {
+            saveAnswerToServer(currentQ.id, currentAns);
+        }
+
+        setCurrentQuestionIndex(newIndex);
+    }, [questions, currentQuestionIndex, answers, saveAnswerToServer]);
 
     const handleSubmitAttempt = async (auto = false) => {
         if (!attempt) return;
         setSubmitting(true);
+
+        // Final sync of any unsaved answer before submitting
+        const currentQ = questions[currentQuestionIndex];
+        const currentAns = answers.get(currentQ?.id);
+        if (currentQ && currentAns && lastSavedAnswers.current.get(currentQ.id) !== currentAns) {
+            try {
+                await attemptsApi.submitAnswer(attempt.id, { question_id: currentQ.id, selected_answer: currentAns });
+            } catch (e) {
+                console.error("Final answer save failed, but proceeding with submit", e);
+            }
+        }
+
         try {
             await attemptsApi.submitAttempt(attempt.id);
             navigate(`/result/${attempt.id}`);
@@ -213,7 +256,7 @@ export default function TakeQuiz() {
                             answers={answers}
                             markedQuestions={markedQuestions}
                             questionIds={questions.map(q => q.id)}
-                            osNavigate={setCurrentQuestionIndex}
+                            osNavigate={handleQuestionNavigation}
                         />
                     </Box>
                 </Box>
@@ -240,7 +283,7 @@ export default function TakeQuiz() {
                     <Box mt={4} display="flex" justifyContent="space-between">
                         <Button
                             variant="outlined"
-                            onClick={() => setCurrentQuestionIndex(prev => Math.max(0, prev - 1))}
+                            onClick={() => handleQuestionNavigation(Math.max(0, currentQuestionIndex - 1))}
                             disabled={currentQuestionIndex === 0}
                         >
                             Previous
@@ -250,7 +293,7 @@ export default function TakeQuiz() {
                             <Button
                                 variant="contained"
                                 color="primary"
-                                onClick={() => setCurrentQuestionIndex(prev => Math.min(questions.length - 1, prev + 1))}
+                                onClick={() => handleQuestionNavigation(Math.min(questions.length - 1, currentQuestionIndex + 1))}
                             >
                                 Next
                             </Button>

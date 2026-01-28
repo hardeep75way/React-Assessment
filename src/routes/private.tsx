@@ -5,6 +5,7 @@ import QuizList from '@/pages/quiz/QuizListPage';
 import QuizDetail from '@/pages/quiz/QuizDetailPage';
 import CreateQuiz from '@/pages/admin/CreateQuizPage';
 import AssignQuiz from '@/pages/admin/AssignQuizPage';
+import ManageQuizzes from '@/pages/admin/ManageQuizzesPage';
 import TakeQuiz from '@/pages/attempt/TakeQuizPage';
 import QuizResult from '@/pages/attempt/QuizResultPage';
 import MyResults from '@/pages/results/MyResultsPage';
@@ -96,6 +97,11 @@ export const privateRoutes: RouteObject[] = [
     {
         path: '/admin/quizzes',
         element: <CreateQuiz />,
+        loader: adminLoader,
+    },
+    {
+        path: '/admin/manage-quizzes',
+        element: <ManageQuizzes />,
         loader: adminLoader,
     },
     {

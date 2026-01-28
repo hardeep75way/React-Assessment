@@ -1,11 +1,14 @@
 import { useState, useCallback } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
+import ReactSelect from 'react-select';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { quizzesApi } from '@/api/quizzes';
 import { usersApi } from '@/api/users';
+import { User } from '@/api/users';
+import { Quiz } from '@/types/quiz';
 import {
     Box,
     Container,
@@ -14,11 +17,6 @@ import {
     TextField,
     Button,
     FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
-    OutlinedInput,
-    Chip,
     CircularProgress,
     Alert,
     Snackbar
@@ -46,8 +44,8 @@ export default function AssignQuizPage() {
     });
 
     const { data: quizzes, isLoading: loadingQuizzes } = useQuery({
-        queryKey: ['quizzes'],
-        queryFn: () => quizzesApi.getAll()
+        queryKey: ['quizzes', 'all'],
+        queryFn: () => quizzesApi.getAllForAdmin()
     });
 
     const { data: users, isLoading: loadingUsers } = useQuery({
@@ -55,7 +53,7 @@ export default function AssignQuizPage() {
         queryFn: () => usersApi.getAll()
     });
 
-    const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<AssignmentFormData>({
+    const { register, handleSubmit, control, setValue, formState: { errors } } = useForm<AssignmentFormData>({
         resolver: yupResolver(assignmentSchema) as any,
         defaultValues: {
             quizId: '',
@@ -63,8 +61,6 @@ export default function AssignQuizPage() {
             dueDate: null
         }
     });
-
-    const selectedUserIds = watch('userIds');
 
     const assignMutation = useMutation({
         mutationFn: async (data: AssignmentFormData) => {
@@ -97,10 +93,7 @@ export default function AssignQuizPage() {
         assignMutation.mutate(data);
     }), [assignMutation, handleSubmit]);
 
-    const handleUserChange = (event: any) => {
-        const value = event.target.value;
-        setValue('userIds', typeof value === 'string' ? value.split(',') : value, { shouldValidate: true });
-    };
+
 
     const isLoading = loadingQuizzes || loadingUsers;
 
@@ -137,22 +130,30 @@ export default function AssignQuizPage() {
                 <Box component="form" onSubmit={onSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                     {/* Quiz Selection */}
                     <FormControl fullWidth error={!!errors.quizId}>
-                        <InputLabel id="quiz-select-label">Select Quiz</InputLabel>
-                        <Select
-                            labelId="quiz-select-label"
-                            label="Select Quiz"
-                            {...register('quizId')}
-                            value={watch('quizId')}
-                        >
-                            <MenuItem value="">
-                                <em>None</em>
-                            </MenuItem>
-                            {quizzes?.filter(q => q.is_published).map(quiz => (
-                                <MenuItem key={quiz.id} value={quiz.id}>
-                                    {quiz.title}
-                                </MenuItem>
-                            ))}
-                        </Select>
+                        <Typography variant="subtitle2" mb={1}>Select Quiz</Typography>
+                        <Controller
+                            name="quizId"
+                            control={control}
+                            render={({ field }) => (
+                                <ReactSelect
+                                    {...field}
+                                    options={quizzes?.map((q: Quiz) => ({ value: q.id, label: `${q.title} ${!q.is_published ? '(Unpublished)' : ''}` }))}
+                                    value={quizzes?.find((q: Quiz) => q.id === field.value) ? { value: field.value, label: quizzes.find((q: Quiz) => q.id === field.value)?.title } : null}
+                                    onChange={(val: any) => field.onChange(val?.value)}
+                                    placeholder="Search and select a quiz..."
+                                    isClearable
+                                    styles={{
+                                        control: (base) => ({
+                                            ...base,
+                                            borderColor: errors.quizId ? '#d32f2f' : base.borderColor,
+                                            '&:hover': {
+                                                borderColor: errors.quizId ? '#d32f2f' : base.borderColor,
+                                            }
+                                        })
+                                    }}
+                                />
+                            )}
+                        />
                         {errors.quizId && (
                             <Typography variant="caption" color="error" sx={{ mt: 0.5 }}>
                                 {errors.quizId.message}
@@ -162,34 +163,30 @@ export default function AssignQuizPage() {
 
                     {/* User Selection */}
                     <FormControl fullWidth error={!!errors.userIds}>
-                        <InputLabel id="users-select-label">Select Users</InputLabel>
-                        <Select
-                            labelId="users-select-label"
-                            multiple
-                            value={selectedUserIds}
-                            onChange={handleUserChange}
-                            input={<OutlinedInput label="Select Users" />}
-                            renderValue={(selected) => (
-                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                    {selected.map((userId) => {
-                                        const user = users?.find(u => u.id === userId);
-                                        return (
-                                            <Chip
-                                                key={userId}
-                                                label={user?.username || userId}
-                                                size="small"
-                                            />
-                                        );
-                                    })}
-                                </Box>
+                        <Typography variant="subtitle2" mb={1}>Select Users</Typography>
+                        <Controller
+                            name="userIds"
+                            control={control}
+                            render={({ field }) => (
+                                <ReactSelect
+                                    {...field}
+                                    isMulti
+                                    options={users?.map((u: User) => ({ value: u.id, label: `${u.username} (${u.email})` }))}
+                                    value={users?.filter((u: User) => field.value?.includes(u.id)).map((u: User) => ({ value: u.id, label: `${u.username} (${u.email})` }))}
+                                    onChange={(vals: any) => field.onChange(vals?.map((v: any) => v.value))}
+                                    placeholder="Search and select users..."
+                                    styles={{
+                                        control: (base) => ({
+                                            ...base,
+                                            borderColor: errors.userIds ? '#d32f2f' : base.borderColor,
+                                            '&:hover': {
+                                                borderColor: errors.userIds ? '#d32f2f' : base.borderColor,
+                                            }
+                                        })
+                                    }}
+                                />
                             )}
-                        >
-                            {users?.map(user => (
-                                <MenuItem key={user.id} value={user.id}>
-                                    {user.username} ({user.email})
-                                </MenuItem>
-                            ))}
-                        </Select>
+                        />
                         {errors.userIds && (
                             <Typography variant="caption" color="error" sx={{ mt: 0.5 }}>
                                 {errors.userIds.message}

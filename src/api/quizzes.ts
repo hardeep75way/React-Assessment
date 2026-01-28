@@ -7,6 +7,11 @@ export const quizzesApi = {
         return response.data;
     },
 
+    getAllForAdmin: async (): Promise<Quiz[]> => {
+        const response = await apiClient.get<Quiz[]>('/quizzes/all');
+        return response.data;
+    },
+
     getMyQuizzes: async (): Promise<Quiz[]> => {
         const response = await apiClient.get<Quiz[]>('/quizzes/my-quizzes');
         return response.data;
