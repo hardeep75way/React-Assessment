@@ -9,7 +9,7 @@ import { quizSchema, type QuizFormData } from '@/lib/validators';
 import { Add as Plus, Delete as Trash2, Save, ArrowBack as ArrowLeft } from '@mui/icons-material';
 import type { QuizCreate, QuestionCreate } from '@/types/quiz';
 
-export default function CreateQuiz() {
+export default function CreateExam() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const [error, setError] = useState<string | null>(null);
@@ -55,12 +55,12 @@ export default function CreateQuiz() {
             navigate('/admin/dashboard');
         },
         onError: (err: AxiosError<{ detail: string }>) => {
-            setError(err.response?.data?.detail || 'Failed to create quiz');
+            setError(err.response?.data?.detail || 'Failed to create exam');
         },
     });
 
     const onSubmit: SubmitHandler<QuizFormData> = (data) => {
-        // Transform form data to API-compatible format
+
         const quizCreateData: QuizCreate = {
             title: data.title,
             description: data.description,
@@ -92,7 +92,7 @@ export default function CreateQuiz() {
                 >
                     <ArrowLeft className="w-5 h-5 text-gray-600" />
                 </button>
-                <h1 className="text-2xl font-bold text-gray-900">Create New Quiz</h1>
+                <h1 className="text-2xl font-bold text-gray-900">Create New Exam</h1>
             </div>
 
             {error && (
@@ -104,7 +104,7 @@ export default function CreateQuiz() {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
                 {/* Basic Info Section */}
                 <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-4">
-                    <h2 className="text-lg font-semibold text-gray-900 border-b pb-2">Quiz Details</h2>
+                    <h2 className="text-lg font-semibold text-gray-900 border-b pb-2">Exam Details</h2>
 
                     <div className="grid grid-cols-1 gap-6">
                         <div>
@@ -124,7 +124,7 @@ export default function CreateQuiz() {
                                 rows={3}
                                 {...register('description')}
                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
-                                placeholder="Describe what this quiz covers..."
+                                placeholder="Describe what this exam covers..."
                             />
                             {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>}
                         </div>
@@ -168,7 +168,7 @@ export default function CreateQuiz() {
                                     className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                                 />
                                 <label htmlFor="is_public" className="ml-2 block text-sm text-gray-900">
-                                    Public Quiz
+                                    Public Exam
                                 </label>
                             </div>
                             <div className="flex items-center">
@@ -302,7 +302,7 @@ export default function CreateQuiz() {
                         className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
                     >
                         <Save className="w-4 h-4 mr-2" />
-                        {createQuizMutation.isPending ? 'Creating...' : 'Create Quiz'}
+                        {createQuizMutation.isPending ? 'Creating...' : 'Create Exam'}
                     </button>
                 </div>
             </form>

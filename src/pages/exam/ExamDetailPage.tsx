@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { quizzesApi } from '@/api/quizzes';
 import { AccessTime as Clock, Quiz as FileQuestion, GpsFixed as Target, PlayArrow as Play } from '@mui/icons-material';
 
-export default function QuizDetail() {
+export default function ExamDetail() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
 
@@ -13,10 +13,10 @@ export default function QuizDetail() {
         enabled: !!id,
     });
 
-    const handleStartQuiz = () => {
+    const handleStartExam = () => {
         if (!id) return;
-        // Navigate to take page - TakeQuizPage will handle attempt start with webcam permission
-        navigate(`/quiz/${id}/take`);
+
+        navigate(`/exam/${id}/take`);
     };
 
     if (isLoading) {
@@ -32,7 +32,7 @@ export default function QuizDetail() {
     if (!quiz) {
         return (
             <div className="text-center py-12">
-                <p className="text-red-600">Quiz not found</p>
+                <p className="text-red-600">Exam not found</p>
             </div>
         );
     }
@@ -78,19 +78,19 @@ export default function QuizDetail() {
                 <div className="border-t border-gray-200 pt-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">Instructions</h3>
                     <ul className="list-disc list-inside space-y-2 text-gray-600 mb-6">
-                        <li>You have {quiz.duration_minutes} minutes to complete this quiz</li>
+                        <li>You have {quiz.duration_minutes} minutes to complete this exam</li>
                         <li>Answer all questions to the best of your ability</li>
                         <li>You can navigate between questions</li>
-                        <li>Quiz will auto-submit when time expires</li>
+                        <li>Exam will auto-submit when time expires</li>
                         <li>You need {quiz.passing_score}% to pass</li>
                     </ul>
 
                     <button
-                        onClick={handleStartQuiz}
+                        onClick={handleStartExam}
                         className="flex items-center space-x-2 px-8 py-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium text-lg shadow-md"
                     >
                         <Play className="w-5 h-5" />
-                        <span>Start Quiz</span>
+                        <span>Start Exam</span>
                     </button>
                 </div>
             </div>

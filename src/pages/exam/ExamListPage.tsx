@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { quizzesApi } from '@/api/quizzes';
 import { AccessTime as Clock, Quiz as FileQuestion, GpsFixed as Target } from '@mui/icons-material';
 
-export default function QuizList() {
+export default function ExamList() {
     const { data: quizzes, isLoading } = useQuery({
         queryKey: ['my-quizzes'],
         queryFn: quizzesApi.getMyQuizzes,
@@ -14,7 +14,7 @@ export default function QuizList() {
 
             <div className="text-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-                <p className="mt-4 text-gray-600">Loading quizzes...</p>
+                <p className="mt-4 text-gray-600">Loading exams...</p>
             </div>
 
         );
@@ -24,22 +24,22 @@ export default function QuizList() {
 
         <div className="space-y-6">
             <div>
-                <h2 className="text-3xl font-bold text-gray-900">My Quizzes</h2>
-                <p className="text-gray-600 mt-2">Quizzes assigned to you</p>
+                <h2 className="text-3xl font-bold text-gray-900">My Exams</h2>
+                <p className="text-gray-600 mt-2">Exams assigned to you</p>
             </div>
 
             {!quizzes || quizzes.length === 0 ? (
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
                     <FileQuestion className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No quizzes assigned</h3>
-                    <p className="text-gray-600">Check back later for new quizzes</p>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No exams assigned</h3>
+                    <p className="text-gray-600">Check back later for new exams</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {quizzes.map((quiz) => (
                         <Link
                             key={quiz.id}
-                            to={`/quiz/${quiz.id}`}
+                            to={`/exam/${quiz.id}`}
                             className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
                         >
                             <h3 className="text-xl font-semibold text-gray-900 mb-2">{quiz.title}</h3>

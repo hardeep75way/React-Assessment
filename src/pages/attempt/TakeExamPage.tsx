@@ -11,7 +11,7 @@ import { QuestionCard } from '@/components/attempt/QuestionCard';
 import { LoadingState } from '@/components/attempt/LoadingState';
 import { ErrorDisplay } from '@/components/attempt/ErrorDisplay';
 import { ExamHeader } from '@/components/attempt/ExamHeader';
-import { QuizSidebar } from '@/components/attempt/QuizSidebar';
+import { ExamSidebar } from '@/components/attempt/ExamSidebar';
 import { QuestionControls } from '@/components/attempt/QuestionControls';
 import { SubmitConfirmDialog } from '@/components/attempt/SubmitConfirmDialog';
 import { SubmittingOverlay } from '@/components/attempt/SubmittingOverlay';
@@ -19,18 +19,18 @@ import { Question } from '@/types/quiz';
 import { Attempt } from '@/types/attempt';
 import { Box, Container } from '@mui/material';
 
-export default function TakeQuiz() {
+export default function TakeExam() {
     const { id: quizId } = useParams<{ id: string }>();
     const navigate = useNavigate();
 
-    // Quiz data fetching with React Query
+
     const { data: quiz, isLoading, error: fetchError } = useQuery({
         queryKey: ['quiz', quizId],
         queryFn: () => quizzesApi.getById(quizId!),
         enabled: !!quizId,
     });
 
-    // Local state
+
     const [attempt, setAttempt] = useState<Attempt | null>(null);
     const [started, setStarted] = useState(false);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -43,12 +43,18 @@ export default function TakeQuiz() {
     const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const camera = useWebcam();
 
-    // Start exam mutation
     const startExamMutation = useMutation({
         mutationFn: () => attemptsApi.start(quizId!),
         onSuccess: (newAttempt) => {
             setAttempt(newAttempt);
             setStarted(true);
+
+            // Request fullscreen mode for exam
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch((err) => {
+                    console.warn('Failed to enter fullscreen:', err);
+                });
+            }
         },
         onError: () => {
             setError("Failed to start exam session. Please try again.");
@@ -57,10 +63,14 @@ export default function TakeQuiz() {
 
     const { enqueueSnackbar } = useSnackbar();
 
-    // Submit exam mutation
     const submitExamMutation = useMutation({
         mutationFn: () => attemptsApi.submitAttempt(attempt!.id),
         onSuccess: () => {
+            // Exit fullscreen mode
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            }
+
             enqueueSnackbar('Exam submitted successfully! Redirecting...', {
                 variant: 'success',
                 autoHideDuration: 2000
@@ -78,7 +88,6 @@ export default function TakeQuiz() {
 
     const questions = quiz?.questions || [];
 
-    // Timer with auto-submit
     const triggerAutoSubmit = useCallback(() => {
         if (attempt && !submitExamMutation.isPending) {
             handleSubmitAttempt();
@@ -90,7 +99,6 @@ export default function TakeQuiz() {
         onTimeUp: triggerAutoSubmit
     });
 
-    // Answer management
     const saveAnswerToServer = useCallback(async (questionId: string, answer: string) => {
         if (!attempt) return;
         if (lastSavedAnswers.current.get(questionId) === answer) return;
@@ -131,7 +139,6 @@ export default function TakeQuiz() {
         });
     };
 
-    // Navigation
     const handleQuestionNavigation = useCallback((newIndex: number) => {
         const current = questions[currentQuestionIndex];
         const currentAnswer = current && answers.get(current.id);
@@ -169,16 +176,14 @@ export default function TakeQuiz() {
         submitExamMutation.mutate();
     };
 
-    // Computed values
+
     const currentQuestion = questions[currentQuestionIndex];
     const questionIds = useMemo(() => questions.map((q: Question) => q.id), [questions]);
     const isSubmitting = startExamMutation.isPending || submitExamMutation.isPending;
-
-    // Render states
     if (isLoading) return <LoadingState />;
 
     if (fetchError || error) {
-        return <ErrorDisplay message={error || "Failed to load quiz metadata."} onRetry={() => window.location.reload()} />;
+        return <ErrorDisplay message={error || "Failed to load exam metadata."} onRetry={() => window.location.reload()} />;
     }
 
     if (!started) {
@@ -206,7 +211,7 @@ export default function TakeQuiz() {
             />
 
             <Container maxWidth="xl" sx={{ flex: 1, py: 4, display: 'flex', gap: 3 }}>
-                <QuizSidebar
+                <ExamSidebar
                     stream={camera.stream}
                     totalQuestions={questions.length}
                     currentIndex={currentQuestionIndex}

@@ -6,12 +6,12 @@ export default function AdminDashboard() {
         <div className="space-y-6">
             <div>
                 <h2 className="text-3xl font-bold text-gray-900">Admin Dashboard</h2>
-                <p className="text-gray-600 mt-2">Manage quizzes and monitor system activity</p>
+                <p className="text-gray-600 mt-2">Manage exams and monitor system activity</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                    <h3 className="text-sm font-semibold text-gray-600 uppercase">Total Quizzes</h3>
+                    <h3 className="text-sm font-semibold text-gray-600 uppercase">Total Exams</h3>
                     <p className="text-4xl font-bold text-indigo-600 mt-2">0</p>
                 </div>
                 <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
@@ -30,22 +30,22 @@ export default function AdminDashboard() {
 
             <div className="flex space-x-4">
                 <Link
-                    to="/admin/quizzes/create"
+                    to="/admin/exams/create"
                     className="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-medium shadow-sm"
                 >
-                    Create New Quiz
+                    Create New Exam
                 </Link>
                 <Link
-                    to="/admin/manage-quizzes"
+                    to="/admin/manage-exams"
                     className="px-6 py-3 bg-purple-600 text-white rounded-md hover:bg-purple-700 font-medium shadow-sm"
                 >
-                    Manage Quizzes
+                    Manage Exams
                 </Link>
                 <Link
-                    to="/admin/assign-quiz"
+                    to="/admin/assign-exam"
                     className="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 font-medium shadow-sm"
                 >
-                    Assign Quiz
+                    Assign Exam
                 </Link>
             </div>
         </div>

@@ -48,7 +48,7 @@ interface AssignmentFormData {
     dueDate?: string | null;
 }
 
-export default function AssignQuizPage() {
+export default function AssignExamsPage() {
     const navigate = useNavigate();
     const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
         open: false,
@@ -85,7 +85,7 @@ export default function AssignQuizPage() {
         onSuccess: () => {
             setSnackbar({
                 open: true,
-                message: 'Quiz assigned successfully!',
+                message: 'Exam assigned successfully!',
                 severity: 'success'
             });
             // Reset form
@@ -96,7 +96,7 @@ export default function AssignQuizPage() {
         onError: (error: ApiError) => {
             setSnackbar({
                 open: true,
-                message: error.response?.data?.detail || 'Failed to assign quiz',
+                message: error.response?.data?.detail || 'Failed to assign exam',
                 severity: 'error'
             });
         }
@@ -132,18 +132,18 @@ export default function AssignQuizPage() {
                 <Box display="flex" alignItems="center" gap={2} mb={3}>
                     <AssignIcon color="primary" sx={{ fontSize: 32 }} />
                     <Typography variant="h4" component="h1">
-                        Assign Quiz to Users
+                        Assign Exam to Users
                     </Typography>
                 </Box>
 
                 <Typography variant="body2" color="text.secondary" mb={4}>
-                    Select a quiz and users to assign it to. Users will be able to take the quiz from their dashboard.
+                    Select an exam and users to assign it to. Users will be able to take the exam from their dashboard.
                 </Typography>
 
                 <Box component="form" onSubmit={onSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    {/* Quiz Selection */}
+                    {/* Exam Selection */}
                     <FormControl fullWidth error={!!errors.quizId}>
-                        <Typography variant="subtitle2" mb={1}>Select Quiz</Typography>
+                        <Typography variant="subtitle2" mb={1}>Select Exam</Typography>
                         <Controller
                             name="quizId"
                             control={control}
@@ -153,7 +153,7 @@ export default function AssignQuizPage() {
                                     options={quizzes?.map((q: Quiz) => ({ value: q.id, label: `${q.title} ${!q.is_published ? '(Unpublished)' : ''}` }))}
                                     value={quizzes?.find((q: Quiz) => q.id === field.value) ? { value: field.value, label: quizzes.find((q: Quiz) => q.id === field.value)?.title } : null}
                                     onChange={(val: SelectOption | null) => field.onChange(val?.value)}
-                                    placeholder="Search and select a quiz..."
+                                    placeholder="Search and select an exam..."
                                     isClearable
                                     styles={{
                                         control: (base) => ({
@@ -229,7 +229,7 @@ export default function AssignQuizPage() {
                         disabled={assignMutation.isPending}
                         startIcon={assignMutation.isPending ? <CircularProgress size={20} /> : <AssignIcon />}
                     >
-                        {assignMutation.isPending ? 'Assigning...' : 'Assign Quiz'}
+                        {assignMutation.isPending ? 'Assigning...' : 'Assign Exam'}
                     </Button>
                 </Box>
             </Paper>

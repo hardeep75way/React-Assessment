@@ -2,7 +2,7 @@ import { Box } from '@mui/material';
 import { WebcamPreview } from './WebcamPreview';
 import { QuestionNavigation } from './QuestionNavigation';
 
-interface QuizSidebarProps {
+interface ExamSidebarProps {
     stream: MediaStream | null;
     totalQuestions: number;
     currentIndex: number;
@@ -12,7 +12,7 @@ interface QuizSidebarProps {
     onNavigate: (index: number) => void;
 }
 
-export function QuizSidebar({
+export function ExamSidebar({
     stream,
     totalQuestions,
     currentIndex,
@@ -20,7 +20,7 @@ export function QuizSidebar({
     markedQuestions,
     questionIds,
     onNavigate
-}: QuizSidebarProps) {
+}: ExamSidebarProps) {
     return (
         <Box width={300} display={{ xs: 'none', lg: 'block' }} flexShrink={0}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, position: 'sticky', top: 90 }}>

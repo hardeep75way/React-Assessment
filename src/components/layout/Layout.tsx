@@ -25,7 +25,6 @@ import MenuIcon from '@mui/icons-material/Menu';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 import { useState } from 'react';
-import React from 'react';
 import { Theme } from '@mui/material/styles';
 
 interface NavItem {
@@ -105,13 +104,13 @@ export default function Layout() {
     const navItems = isAdmin
         ? [
             { path: '/admin/dashboard', label: 'Dashboard', icon: DashboardIcon },
-            { path: '/admin/manage-quizzes', label: 'Manage Quizzes', icon: ListAltIcon },
-            { path: '/admin/assign-quiz', label: 'Assign Quiz', icon: AssignmentIndIcon },
-            { path: '/admin/quizzes', label: 'Create Quiz', icon: QuizIcon },
+            { path: '/admin/manage-exams', label: 'Manage Exams', icon: ListAltIcon },
+            { path: '/admin/assign-exam', label: 'Assign Exam', icon: AssignmentIndIcon },
+            { path: '/admin/exams/create', label: 'Create Exam', icon: QuizIcon },
         ]
         : [
             { path: '/dashboard', label: 'Dashboard', icon: DashboardIcon },
-            { path: '/quizzes', label: 'My Quizzes', icon: QuizIcon },
+            { path: '/exams', label: 'My Exams', icon: QuizIcon },
             { path: '/results', label: 'Results', icon: HistoryIcon },
             { path: '/leaderboard', label: 'Leaderboard', icon: EmojiEventsIcon },
         ];
@@ -125,7 +124,7 @@ export default function Layout() {
         <div>
             <Toolbar sx={styles.toolbarCenter}>
                 <Typography variant="h6" noWrap component="div" sx={styles.brandText}>
-                    Q System
+                    Exam System
                 </Typography>
             </Toolbar>
             <List>
@@ -167,7 +166,7 @@ export default function Layout() {
                         <MenuIcon />
                     </IconButton>
                     <Typography variant="h6" noWrap component="div" sx={styles.title}>
-                        Quiz System {isAdmin && <Typography component="span" variant="caption" sx={styles.adminBadge}>ADMIN</Typography>}
+                        Exam System {isAdmin && <Typography component="span" variant="caption" sx={styles.adminBadge}>ADMIN</Typography>}
                     </Typography>
 
                     <Box sx={styles.userSection}>
@@ -211,7 +210,6 @@ export default function Layout() {
                     {drawer}
                 </Drawer>
             </Box>
-            <BuggyButton />
 
             <Box
                 component="main"
@@ -227,15 +225,3 @@ export default function Layout() {
     );
 }
 
-const BuggyButton = () => {
-    const [hasError, setHasError] = React.useState(false);
-
-    if (hasError) {
-        throw new Error('Test Crash!');
-    }
-    return (
-        <button onClick={() => setHasError(true)} style={styles.buggyButton}>
-            Trigger Error
-        </button>
-    );
-};

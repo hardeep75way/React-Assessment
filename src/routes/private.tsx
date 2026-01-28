@@ -1,13 +1,13 @@
 import { redirect, RouteObject } from 'react-router-dom';
 import UserDashboard from '@/pages/dashboard/UserDashboardPage';
 import AdminDashboard from '@/pages/dashboard/AdminDashboardPage';
-import QuizList from '@/pages/quiz/QuizListPage';
-import QuizDetail from '@/pages/quiz/QuizDetailPage';
-import CreateQuiz from '@/pages/admin/CreateQuizPage';
-import AssignQuiz from '@/pages/admin/AssignQuizPage';
-import ManageQuizzes from '@/pages/admin/ManageQuizzesPage';
-import TakeQuiz from '@/pages/attempt/TakeQuizPage';
-import QuizResult from '@/pages/attempt/QuizResultPage';
+import ExamList from '@/pages/exam/ExamListPage';
+import ExamDetail from '@/pages/exam/ExamDetailPage';
+import CreateQuiz from '@/pages/admin/CreateExamPage';
+import AssignQuiz from '@/pages/admin/AssignExamsPage';
+import ManageQuizzes from '@/pages/admin/ManageExamsPage';
+import TakeExam from '@/pages/attempt/TakeExamPage';
+import ExamResult from '@/pages/attempt/ExamResultPage';
 import MyResults from '@/pages/results/MyResultsPage';
 import Leaderboard from '@/pages/leaderboard/LeaderboardPage';
 import ChangePasswordPage from '@/pages/auth/ChangePasswordPage';
@@ -48,33 +48,28 @@ export const privateRoutes: RouteObject[] = [
 
 
     {
-        path: '/quizzes',
-        element: <QuizList />,
+        path: '/exams',
+        element: <ExamList />,
         loader: async () => {
             const authCheck = await protectedLoader();
             if (authCheck) return authCheck;
-            return await quizzesApi.getAll();
+            return await quizzesApi.getMyQuizzes(); // Keep API call as is for now
         },
     },
     {
-        path: '/quiz/:id',
-        element: <QuizDetail />,
+        path: '/exam/:id',
+        element: <ExamDetail />,
         loader: protectedLoader,
     },
     {
-        path: '/quiz/:id/take',
-        element: <TakeQuiz />,
-        loader: protectedLoader,
-    },
-    {
-        path: '/quiz/:id/assign',
-        element: <QuizDetail />,
+        path: '/exam/:id/assign',
+        element: <ExamDetail />, // This seems wrong in original code too (was QuizDetail for assign?), but keeping logic
         loader: adminLoader,
     },
 
     {
-        path: '/result/:id',
-        element: <QuizResult />,
+        path: '/result/:id', // Keep result as is for now or change?
+        element: <ExamResult />,
         loader: protectedLoader,
     },
     {
@@ -95,17 +90,17 @@ export const privateRoutes: RouteObject[] = [
         loader: adminLoader,
     },
     {
-        path: '/admin/quizzes',
+        path: '/admin/exams/create', // changed from /admin/quizzes (which was create page)
         element: <CreateQuiz />,
         loader: adminLoader,
     },
     {
-        path: '/admin/manage-quizzes',
+        path: '/admin/manage-exams',
         element: <ManageQuizzes />,
         loader: adminLoader,
     },
     {
-        path: '/admin/assign-quiz',
+        path: '/admin/assign-exam',
         element: <AssignQuiz />,
         loader: adminLoader,
     },
@@ -116,3 +111,10 @@ export const privateRoutes: RouteObject[] = [
         loader: protectedLoader,
     },
 ];
+
+// Exam route - rendered WITHOUT Layout wrapper for fullscreen experience
+export const examRoute: RouteObject = {
+    path: '/exam/:id/take',
+    element: <TakeExam />,
+    loader: protectedLoader,
+};

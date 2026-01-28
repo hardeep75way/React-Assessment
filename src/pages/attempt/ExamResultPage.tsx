@@ -4,7 +4,7 @@ import { useParams, Link } from 'react-router-dom';
 import { resultsApi } from '@/api/results';
 import { Cancel as XCircle, ArrowBack as ArrowLeft, EmojiEvents as Trophy } from '@mui/icons-material';
 
-export default function QuizResult() {
+export default function ExamResult() {
     const { id } = useParams<{ id: string }>();
 
     const { data: result, isLoading } = useQuery({
@@ -85,11 +85,11 @@ export default function QuizResult() {
 
             <div className="flex justify-center space-x-4">
                 <Link
-                    to="/quizzes"
+                    to="/exams"
                     className="flex items-center px-6 py-3 border border-gray-300 shadow-sm text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                 >
                     <ArrowLeft className="w-5 h-5 mr-2" />
-                    Back to Quizzes
+                    Back to Exams
                 </Link>
                 <Link
                     to="/leaderboard"

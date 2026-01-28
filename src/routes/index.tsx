@@ -1,6 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { publicRoutes } from './public';
-import { privateRoutes } from './private';
+import { privateRoutes, examRoute } from './private';
 import Layout from '@/components/layout/Layout';
 import { RouteErrorBoundary } from '@/components/errorBoundary/RouteErrorBoundary';
 
@@ -11,6 +11,9 @@ const appRoutes = [
     },
 
     ...publicRoutes,
+
+    // Exam route - standalone without Layout for fullscreen
+    examRoute,
 
     {
         element: <Layout />,

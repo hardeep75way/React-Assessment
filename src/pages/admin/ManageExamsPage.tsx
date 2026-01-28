@@ -36,7 +36,7 @@ interface ApiError {
     };
 }
 
-export default function ManageQuizzesPage() {
+export default function ManageExamsPage() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
@@ -56,14 +56,14 @@ export default function ManageQuizzesPage() {
             queryClient.invalidateQueries({ queryKey: ['quizzes'] });
             setSnackbar({
                 open: true,
-                message: 'Quiz published successfully!',
+                message: 'Exam published successfully!',
                 severity: 'success'
             });
         },
         onError: (error: ApiError) => {
             setSnackbar({
                 open: true,
-                message: error.response?.data?.detail || 'Failed to publish quiz',
+                message: error.response?.data?.detail || 'Failed to publish exam',
                 severity: 'error'
             });
         }
@@ -75,14 +75,14 @@ export default function ManageQuizzesPage() {
             queryClient.invalidateQueries({ queryKey: ['quizzes'] });
             setSnackbar({
                 open: true,
-                message: 'Quiz deleted successfully!',
+                message: 'Exam deleted successfully!',
                 severity: 'success'
             });
         },
         onError: (error: ApiError) => {
             setSnackbar({
                 open: true,
-                message: error.response?.data?.detail || 'Failed to delete quiz',
+                message: error.response?.data?.detail || 'Failed to delete exam',
                 severity: 'error'
             });
         }
@@ -109,18 +109,18 @@ export default function ManageQuizzesPage() {
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
                 <Box>
                     <Typography variant="h4" component="h1" gutterBottom>
-                        Quiz Management
+                        Exam Management
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                        Manage all quizzes, publish drafts, and edit content
+                        Manage all exams, publish drafts, and edit content
                     </Typography>
                 </Box>
                 <Button
                     variant="contained"
                     color="primary"
-                    onClick={() => navigate('/admin/quizzes/create')}
+                    onClick={() => navigate('/admin/exams/create')}
                 >
-                    Create New Quiz
+                    Create New Exam
                 </Button>
             </Box>
 
@@ -171,7 +171,7 @@ export default function ManageQuizzesPage() {
                                                     color="primary"
                                                     onClick={() => publishMutation.mutate(quiz.id)}
                                                     disabled={publishMutation.isPending}
-                                                    title="Publish Quiz"
+                                                    title="Publish Exam"
                                                 >
                                                     <PublishIcon fontSize="small" />
                                                 </IconButton>
@@ -188,8 +188,8 @@ export default function ManageQuizzesPage() {
                                             <IconButton
                                                 size="small"
                                                 color="primary"
-                                                onClick={() => navigate(`/admin/quizzes/${quiz.id}/edit`)}
-                                                title="Edit Quiz"
+                                                onClick={() => navigate(`/admin/exams/${quiz.id}/edit`)}
+                                                title="Edit Exam"
                                                 disabled={quiz.is_published}
                                             >
                                                 <EditIcon fontSize="small" />
@@ -198,12 +198,12 @@ export default function ManageQuizzesPage() {
                                                 size="small"
                                                 color="error"
                                                 onClick={() => {
-                                                    if (window.confirm('Are you sure you want to delete this quiz?')) {
+                                                    if (window.confirm('Are you sure you want to delete this exam?')) {
                                                         deleteMutation.mutate(quiz.id);
                                                     }
                                                 }}
                                                 disabled={deleteMutation.isPending}
-                                                title="Delete Quiz"
+                                                title="Delete Exam"
                                             >
                                                 <DeleteIcon fontSize="small" />
                                             </IconButton>
@@ -215,7 +215,7 @@ export default function ManageQuizzesPage() {
                             <TableRow>
                                 <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
                                     <Typography variant="body1" color="text.secondary">
-                                        No quizzes found. Create your first quiz to get started!
+                                        No exams found. Create your first exam to get started!
                                     </Typography>
                                 </TableCell>
                             </TableRow>

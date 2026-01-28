@@ -10,7 +10,7 @@ export const apiClient: AxiosInstance = axios.create({
     },
 });
 
-// Request interceptor to add auth token
+
 apiClient.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
         const token = localStorage.getItem('accessToken');
@@ -24,7 +24,6 @@ apiClient.interceptors.request.use(
     }
 );
 
-// Track if we're currently refreshing to prevent multiple refresh calls
 let isRefreshing = false;
 let failedQueue: Array<{
     resolve: (value?: unknown) => void;
@@ -43,7 +42,7 @@ const processQueue = (error: AxiosError | null, token: string | null = null) => 
     failedQueue = [];
 };
 
-// Response interceptor for token refresh
+
 apiClient.interceptors.response.use(
     (response) => response,
     async (error: AxiosError) => {
@@ -51,7 +50,6 @@ apiClient.interceptors.response.use(
 
         if (error.response?.status === 401 && !originalRequest._retry) {
             if (isRefreshing) {
-                // If already refreshing, queue this request
                 return new Promise((resolve, reject) => {
                     failedQueue.push({ resolve, reject });
                 }).then(token => {
@@ -70,7 +68,6 @@ apiClient.interceptors.response.use(
             const refreshToken = localStorage.getItem('refreshToken');
 
             if (!refreshToken) {
-                // No refresh token available, clear everything and redirect
                 localStorage.removeItem('accessToken');
                 localStorage.removeItem('refreshToken');
                 localStorage.removeItem('user');
@@ -79,20 +76,17 @@ apiClient.interceptors.response.use(
             }
 
             try {
-                // Try to refresh token using plain axios (not apiClient to avoid recursion)
+
                 const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
                     refresh_token: refreshToken,
                 });
 
                 const { access_token, refresh_token } = response.data;
 
-                // Update localStorage with new tokens
                 localStorage.setItem('accessToken', access_token);
                 localStorage.setItem('refreshToken', refresh_token);
 
-                // Update Redux store if available
                 try {
-                    // Dynamic import to avoid circular dependency
                     const { store } = await import('@/store');
                     const { setCredentials } = await import('@/store/slices/authSlice');
 
@@ -109,19 +103,14 @@ apiClient.interceptors.response.use(
                     console.warn('Failed to update Redux store after token refresh:', storeError);
                 }
 
-                // Update the original request with new token
                 if (originalRequest.headers) {
                     originalRequest.headers.Authorization = `Bearer ${access_token}`;
                 }
-
-                // Process queued requests with the new token
                 processQueue(null, access_token);
                 isRefreshing = false;
 
-                // Retry the original request
                 return apiClient(originalRequest);
             } catch (refreshError) {
-                // Refresh failed, clear auth and redirect
                 processQueue(refreshError as AxiosError, null);
                 isRefreshing = false;
 
