@@ -14,7 +14,7 @@ import {
 
 interface QuestionCardProps {
     question: Question;
-    selectedAnswer?: string | string[]; // Single string for MCQ, array for multi-select (future proof)
+    selectedAnswer?: string | string[];
     onAnswerSelect: (answer: string) => void;
     isMarked: boolean;
     onToggleMark: () => void;

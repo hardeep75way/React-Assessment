@@ -4,7 +4,7 @@ interface UseWebcamReturn {
     stream: MediaStream | null;
     error: string | null;
     isLoading: boolean;
-    hasPermission: boolean | null; // null = unknown, true = granted, false = denied
+    hasPermission: boolean | null;
     requestPermission: () => Promise<boolean>;
     stopStream: () => void;
 }
@@ -27,7 +27,7 @@ export function useWebcam(): UseWebcamReturn {
         setError(null);
         try {
             const mediaStream = await navigator.mediaDevices.getUserMedia({
-                video: { width: 320, height: 240 }, // Ask for low res to save bandwidth/processing
+                video: { width: 320, height: 240 },
                 audio: false
             });
             setStream(mediaStream);

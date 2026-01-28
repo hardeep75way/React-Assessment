@@ -33,7 +33,7 @@ export function QuestionNavigation({
                 variant = "contained";
             } else if (isMarked) {
                 color = "warning";
-                variant = "outlined"; // Or contained if preferred
+                variant = "outlined";
             } else if (isAnswered) {
                 color = "success";
                 variant = "outlined";

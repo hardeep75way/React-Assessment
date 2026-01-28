@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 
 interface UseExamTimerProps {
     durationSeconds?: number;
-    expiresAt?: string; // ISO string
+    expiresAt?: string;
     onTimeUp?: () => void;
 }
 
@@ -10,15 +10,15 @@ interface UseExamTimerReturn {
     timeLeft: number;
     formattedTime: string;
     isTimeUp: boolean;
-    progress: number; // Percentage 0-100
+    progress: number;
 }
 
 export function useExamTimer({ durationSeconds, expiresAt, onTimeUp }: UseExamTimerProps): UseExamTimerReturn {
     const calculateTimeLeft = useCallback(() => {
         if (expiresAt) {
+            const expires = new Date(expiresAt.endsWith('Z') ? expiresAt : `${expiresAt}Z`).getTime();
             const now = new Date().getTime();
-            const end = new Date(expiresAt).getTime();
-            const diff = Math.max(0, Math.floor((end - now) / 1000));
+            const diff = Math.max(0, Math.floor((expires - now) / 1000));
             return diff;
         } else if (durationSeconds !== undefined) {
             return durationSeconds;
@@ -35,7 +35,6 @@ export function useExamTimer({ durationSeconds, expiresAt, onTimeUp }: UseExamTi
         onTimeUpRef.current = onTimeUp;
     }, [onTimeUp]);
 
-    // Sync timeLeft when props change
     useEffect(() => {
         setTimeLeft(calculateTimeLeft());
     }, [calculateTimeLeft, expiresAt, durationSeconds]);
@@ -54,7 +53,6 @@ export function useExamTimer({ durationSeconds, expiresAt, onTimeUp }: UseExamTi
                 } else {
                     if (prev <= 0) {
                         clearInterval(interval);
-                        // Only trigger if it was ticking
                         return 0;
                     }
                     const next = prev - 1;

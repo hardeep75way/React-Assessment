@@ -28,10 +28,8 @@ export default function WebcamPermissionModal({
             maxWidth="sm"
             fullWidth
             disableEscapeKeyDown
-            // Prevent closing by clicking outside
             onClose={(_, reason) => {
                 if (reason !== 'backdropClick' && reason !== 'escapeKeyDown') {
-                    // allow close if needed logic
                 }
             }}
         >
@@ -93,7 +91,7 @@ export default function WebcamPermissionModal({
                     color="inherit"
                     fullWidth
                     onClick={() => window.history.back()}
-                    sx={{ mt: 1, ml: '0 !important' }} // Override specific DialogActions spacing if needed
+                    sx={{ mt: 1, ml: '0 !important' }}
                 >
                     Cancel
                 </Button>
