@@ -49,7 +49,7 @@ export default function TakeExam() {
             setAttempt(newAttempt);
             setStarted(true);
 
-            // Request fullscreen mode for exam
+
             if (document.documentElement.requestFullscreen) {
                 document.documentElement.requestFullscreen().catch((err) => {
                     console.warn('Failed to enter fullscreen:', err);

@@ -27,6 +27,27 @@ import { registerSchema, type RegisterFormData } from '@/lib/validators';
 import { AxiosError } from 'axios';
 import AuthBrandPanel from '@/components/auth/AuthBrandPanel';
 
+const styles = {
+    box: {
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        p: { xs: 2, sm: 4 },
+        backgroundColor: 'background.default',
+
+    },
+    paper: {
+        maxWidth: 460,
+        width: '100%',
+        p: { xs: 3, sm: 5 },
+        borderRadius: 3,
+        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+        border: 1,
+        borderColor: 'grey.200',
+    }
+}
+
 export default function RegisterPage() {
     const navigate = useNavigate();
     const { enqueueSnackbar } = useSnackbar();
@@ -95,26 +116,11 @@ export default function RegisterPage() {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.5 }}
-                    sx={{
-                        minHeight: '100vh',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        p: { xs: 2, sm: 4 },
-                        backgroundColor: 'background.default',
-                    }}
+                    sx={styles.box}
                 >
                     <Paper
                         elevation={0}
-                        sx={{
-                            maxWidth: 460,
-                            width: '100%',
-                            p: { xs: 3, sm: 5 },
-                            borderRadius: 3,
-                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                            border: 1,
-                            borderColor: 'grey.200',
-                        }}
+                        sx={styles.paper}
                     >
                         {/* Header */}
                         <Box sx={{ mb: 4, textAlign: 'center' }}>

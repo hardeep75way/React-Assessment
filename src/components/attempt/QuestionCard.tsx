@@ -21,6 +21,29 @@ interface QuestionCardProps {
     questionNumber: number;
 }
 
+const styles = {
+    paper: {
+        p: 4,
+        border: '1px solid',
+        borderColor: 'divider',
+        borderRadius: 2
+    },
+    box: {
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "flex-start",
+        mb: 3
+    },
+    chip: {
+        mb: 1.5,
+        borderRadius: 1
+    },
+    button: {
+        borderRadius: 10,
+        textTransform: 'none'
+    }
+}
+
 export function QuestionCard({
     question,
     selectedAnswer,
@@ -30,17 +53,16 @@ export function QuestionCard({
     questionNumber
 }: QuestionCardProps) {
 
-    // For now support MCQ via Radio. If Multi-select needed later, we check question type.
     const currentValue = typeof selectedAnswer === 'string' ? selectedAnswer : '';
 
     return (
-        <Paper elevation={0} sx={{ p: 4, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
-            <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={3}>
+        <Paper elevation={0} sx={styles.paper}>
+            <Box sx={styles.box}>
                 <Box>
                     <Chip
                         label={`Question ${questionNumber}`}
                         size="small"
-                        sx={{ mb: 1.5, borderRadius: 1 }}
+                        sx={styles.chip}
                         color="default"
                         variant="outlined"
                     />
@@ -54,7 +76,7 @@ export function QuestionCard({
                     size="small"
                     startIcon={isMarked ? <Flag sx={{ fontSize: 16 }} /> : <OutlinedFlag sx={{ fontSize: 16 }} />}
                     onClick={onToggleMark}
-                    sx={{ borderRadius: 10, textTransform: 'none' }}
+                    sx={styles.button}
                 >
                     {isMarked ? 'Marked' : 'Mark for Review'}
                 </Button>

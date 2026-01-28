@@ -1,5 +1,3 @@
-import React from 'react';
-
 interface FallbackProps {
     error: Error;
     resetErrorBoundary: () => void;
@@ -17,7 +15,7 @@ const styles = {
         marginTop: 0
     },
     details: {
-        whiteSpace: 'pre-wrap',
+        whiteSpace: 'pre-wrap' as const,
         margin: '10px 0'
     },
     button: {
@@ -30,7 +28,7 @@ const styles = {
     }
 }
 
-export const Fallback: React.FC<FallbackProps> = ({ error, resetErrorBoundary }) => {
+export function Fallback({ error, resetErrorBoundary }: FallbackProps) {
     return (
         <div role="alert" style={styles.container}>
             <h2 style={styles.h2}>Something went wrong.</h2>
@@ -46,4 +44,4 @@ export const Fallback: React.FC<FallbackProps> = ({ error, resetErrorBoundary })
             </button>
         </div>
     );
-};
+}

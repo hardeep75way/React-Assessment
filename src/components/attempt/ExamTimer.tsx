@@ -7,6 +7,8 @@ interface ExamTimerProps {
     progress: number;
 }
 
+
+
 export function ExamTimer({ formattedTime, isTimeLow, progress }: ExamTimerProps) {
     return (
         <Box

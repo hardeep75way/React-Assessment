@@ -12,7 +12,6 @@ const appRoutes = [
 
     ...publicRoutes,
 
-    // Exam route - standalone without Layout for fullscreen
     examRoute,
 
     {

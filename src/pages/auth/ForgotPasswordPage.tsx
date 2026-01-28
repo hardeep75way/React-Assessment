@@ -54,7 +54,6 @@ export default function ForgotPassword() {
         onSuccess: (data) => {
             enqueueSnackbar(data.message, { variant: 'success' });
 
-            // In development, show the reset token
             if (data.reset_token) {
                 enqueueSnackbar(`Reset Token: ${data.reset_token}`, {
                     variant: 'info',

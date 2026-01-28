@@ -53,7 +53,7 @@ export const privateRoutes: RouteObject[] = [
         loader: async () => {
             const authCheck = await protectedLoader();
             if (authCheck) return authCheck;
-            return await quizzesApi.getMyQuizzes(); // Keep API call as is for now
+            return await quizzesApi.getMyQuizzes();
         },
     },
     {
@@ -63,12 +63,12 @@ export const privateRoutes: RouteObject[] = [
     },
     {
         path: '/exam/:id/assign',
-        element: <ExamDetail />, // This seems wrong in original code too (was QuizDetail for assign?), but keeping logic
+        element: <ExamDetail />,
         loader: adminLoader,
     },
 
     {
-        path: '/result/:id', // Keep result as is for now or change?
+        path: '/result/:id',
         element: <ExamResult />,
         loader: protectedLoader,
     },
@@ -90,7 +90,7 @@ export const privateRoutes: RouteObject[] = [
         loader: adminLoader,
     },
     {
-        path: '/admin/exams/create', // changed from /admin/quizzes (which was create page)
+        path: '/admin/exams/create',
         element: <CreateQuiz />,
         loader: adminLoader,
     },
@@ -112,7 +112,6 @@ export const privateRoutes: RouteObject[] = [
     },
 ];
 
-// Exam route - rendered WITHOUT Layout wrapper for fullscreen experience
 export const examRoute: RouteObject = {
     path: '/exam/:id/take',
     element: <TakeExam />,

@@ -10,6 +10,27 @@ interface QuestionNavigationProps {
     onNavigate: (index: number) => void;
 }
 
+const styles = {
+    box: {
+        position: 'absolute',
+        top: -2,
+        right: -2,
+        width: 8,
+        height: 8,
+        borderRadius: '50%',
+        bgcolor: 'warning.main',
+        border: '1px solid white'
+    },
+    button: {
+        minWidth: 32,
+        width: 32,
+        height: 32,
+        p: 0,
+        borderRadius: '50%',
+        position: 'relative'
+    }
+}
+
 export function QuestionNavigation({
     totalQuestions,
     currentIndex,
@@ -45,29 +66,13 @@ export function QuestionNavigation({
                     variant={variant}
                     color={color}
                     onClick={() => onNavigate(idx)}
-                    sx={{
-                        minWidth: 32,
-                        width: 32,
-                        height: 32,
-                        p: 0,
-                        borderRadius: '50%',
-                        position: 'relative'
-                    }}
+                    sx={styles.button}
                     aria-label={`Go to question ${idx + 1}`}
                 >
                     {idx + 1}
                     {isMarked && !isCurrent && (
                         <Box
-                            sx={{
-                                position: 'absolute',
-                                top: -2,
-                                right: -2,
-                                width: 8,
-                                height: 8,
-                                borderRadius: '50%',
-                                bgcolor: 'warning.main',
-                                border: '1px solid white'
-                            }}
+                            sx={styles.box}
                         />
                     )}
                 </Button>
