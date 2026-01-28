@@ -99,11 +99,11 @@ export function QuestionCard({
                                     sx={{
                                         p: 1.5,
                                         borderRadius: 2,
-                                        borderColor: isSelected ? 'primary.main' : 'divider', // Changed to primary.main for MUI theme
-                                        bgcolor: isSelected ? 'primary.light' : 'transparent', // Changed to primary.light for MUI theme
+                                        borderColor: isSelected ? 'primary.main' : 'divider',
+                                        bgcolor: isSelected ? 'primary.light' : 'transparent',
                                         transition: 'all 0.2s',
                                         '&:hover': {
-                                            borderColor: isSelected ? 'primary.main' : 'primary.light', // Changed to primary.main/light
+                                            borderColor: isSelected ? 'primary.main' : 'primary.light',
                                             bgcolor: isSelected ? 'primary.light' : 'grey.50'
                                         }
                                     }}

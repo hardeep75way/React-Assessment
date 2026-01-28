@@ -27,7 +27,7 @@ export const questionSchema = yup.object({
     options: yup.array().of(yup.string().required()).min(2, 'At least 2 options required').required(),
     correct_answer: yup.string().required('Correct answer is required'),
     points: yup.number().min(1, 'Points must be at least 1').required(),
-    order: yup.number().optional(), // Optional for CreateQuiz
+    order: yup.number().optional(),
 });
 export const quizSchema = yup.object({
     title: yup.string().min(3).max(255).required('Title is required'),
