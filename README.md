@@ -1,6 +1,6 @@
-# 🎓 Online Quiz System - Frontend
+# 🎓 Online Exam System - Frontend
 
-A modern, production-grade frontend for the Online Quiz System, built with **React**, **TypeScript**, and **Material UI**. This project features a robust architecture with professional design patterns, strict type safety, and efficient state management.
+A modern, production-grade frontend for the Online Exam System, built with **React**, **TypeScript**, and **Material UI**. This project features a robust architecture with professional design patterns, strict type safety, and efficient state management.
 
 ## 🎥 Demo Video
 
@@ -9,11 +9,12 @@ A modern, production-grade frontend for the Online Quiz System, built with **Rea
 
 ## 🚀 Tech Stack
 
-- **Core:** [React 18](https://react.dev/), [Vite](https://vitejs.dev/), [TypeScript](https://www.typescriptlang.org/)
+- **Core:** [React 19](https://react.dev/), [Vite](https://vitejs.dev/), [TypeScript](https://www.typescriptlang.org/)
 - **UI Framework:** [Material UI (MUI v5)](https://mui.com/) with a custom design system
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/) (Utility-first CSS)
 - **State Management:** [Redux Toolkit](https://redux-toolkit.js.org/) (Auth/User state)
 - **Data Fetching:** [TanStack Query (React Query)](https://tanstack.com/query/latest) (Server state)
-- **Routing:** [React Router v6](https://reactrouter.com/) (Data APIs, Loaders)
+- **Routing:** [React Router v7](https://reactrouter.com/) (Data APIs, Loaders)
 - **Forms & Validation:** [React Hook Form](https://react-hook-form.com/) + [Yup](https://github.com/jquense/yup)
 - **HTTP Client:** [Axios](https://axios-http.com/) with interceptors for JWT handling
 - **Icons:** [MUI Icons](https://mui.com/material-ui/material-icons/) + SVG components
@@ -31,7 +32,7 @@ A modern, production-grade frontend for the Online Quiz System, built with **Rea
 ### 🎨 UI/UX Design
 - **Modern Aesthetic:** "Deep Purple & Teal" SaaS-inspired theme.
 - **Split-Screen Auth:** Professional login/register pages with branding panel.
-- **Responsive Layout:** Mobile-friendly dashboard and quiz interfaces.
+- **Responsive Layout:** Mobile-friendly dashboard and exam interfaces.
 - **Feedback:** Toast notifications (Notistack) and skeleton loading states.
 
 ### 🧩 Architecture
@@ -52,10 +53,12 @@ src/
 ├── lib/            # Utilities (Validators, Auth guards)
 ├── pages/          # Application views/routes
 │   ├── admin/      # Admin specific pages
-│   ├── attempt/    # Key quiz taking flows
+│   ├── attempt/    # Key exam taking flows
 │   ├── auth/       # Login/Register/Password pages
 │   ├── dashboard/  # User & Admin dashboards
-│   └── quiz/       # Quiz management pages
+│   ├── exam/       # Exam management & list pages
+│   ├── leaderboard/# Leaderboard pages
+│   └── results/    # Result pages
 ├── routes/         # Router configuration (Private/Public)
 ├── store/          # Redux slices and store config
 ├── theme/          # MUI Theme customization & Tokens
