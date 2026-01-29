@@ -102,7 +102,7 @@ export default function CreateExam() {
             )}
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-                {/* Basic Info Section */}
+
                 <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-4">
                     <h2 className="text-lg font-semibold text-gray-900 border-b pb-2">Exam Details</h2>
 
@@ -186,7 +186,6 @@ export default function CreateExam() {
                     </div>
                 </div>
 
-                {/* Question Builder Section */}
                 <div className="space-y-4">
                     <h2 className="text-xl font-bold text-gray-900 flex justify-between items-center">
                         Questions

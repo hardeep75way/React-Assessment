@@ -95,7 +95,7 @@ export default function Layout() {
     const dispatch = useAppDispatch();
     const user = useAppSelector((state) => state.auth.user);
     const handleLogout = () => {
-        dispatch(logout()); // Redux action
+        dispatch(logout());
         navigate('/login');
     };
 

@@ -107,7 +107,8 @@ export default function TakeExam() {
             await attemptsApi.submitAnswer(attempt.id, { question_id: questionId, selected_answer: answer });
             lastSavedAnswers.current.set(questionId, answer);
         } catch (err) {
-            // Silent fail
+            console.error('Failed to save answer:', err);
+            enqueueSnackbar('Failed to save answer. Please check your connection.', { variant: 'error' });
         }
     }, [attempt]);
 
@@ -158,7 +159,7 @@ export default function TakeExam() {
         handleQuestionNavigation(Math.min(questions.length - 1, currentQuestionIndex + 1));
     };
 
-    // Submission
+
     const handleSubmitAttempt = async () => {
         if (!attempt) return;
 
@@ -169,7 +170,8 @@ export default function TakeExam() {
             try {
                 await attemptsApi.submitAnswer(attempt.id, { question_id: current.id, selected_answer: currentAnswer });
             } catch (e) {
-                // Proceed with submit anyway
+                console.error('Failed to save answer:', e);
+                enqueueSnackbar('Failed to save answer. Please check your connection.', { variant: 'error' });
             }
         }
 

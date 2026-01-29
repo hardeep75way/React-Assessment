@@ -24,7 +24,7 @@ export function WebcamPreview({ stream, className = "", isPermissionsGranted }: 
                     autoPlay
                     playsInline
                     muted
-                    className="w-full h-full object-cover transform scale-x-[-1]" // Mirror effect
+                    className="w-full h-full object-cover transform scale-x-[-1]"
                 />
             ) : (
                 <div className="flex flex-col items-center justify-center text-gray-500 p-4">
