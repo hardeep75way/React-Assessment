@@ -1,9 +1,5 @@
-import { useState, useCallback, useMemo, useRef } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
-import { attemptsApi } from '@/api/attempts';
-import { quizzesApi } from '@/api/quizzes';
+import { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { useWebcam } from '@/hooks/useWebcam';
 import { useExamTimer } from '@/hooks/useExamTimer';
 import WebcamPermissionModal from '@/components/attempt/WebcamPermissionModal';
@@ -15,184 +11,33 @@ import { ExamSidebar } from '@/components/attempt/ExamSidebar';
 import { QuestionControls } from '@/components/attempt/QuestionControls';
 import { SubmitConfirmDialog } from '@/components/attempt/SubmitConfirmDialog';
 import { SubmittingOverlay } from '@/components/attempt/SubmittingOverlay';
-import { Question } from '@/types/quiz';
-import { Attempt } from '@/types/attempt';
+import { SecurityWarning } from '@/components/attempt/SecurityWarning';
 import { Box, Container } from '@mui/material';
+import { useExamSession } from '@/hooks/useExamSession';
 
 export default function TakeExam() {
     const { id: quizId } = useParams<{ id: string }>();
-    const navigate = useNavigate();
-
-
-    const { data: quiz, isLoading, error: fetchError } = useQuery({
-        queryKey: ['quiz', quizId],
-        queryFn: () => quizzesApi.getById(quizId!),
-        enabled: !!quizId,
-    });
-
-
-    const [attempt, setAttempt] = useState<Attempt | null>(null);
-    const [started, setStarted] = useState(false);
-    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-    const [answers, setAnswers] = useState<Map<string, string>>(new Map());
-    const [markedQuestions, setMarkedQuestions] = useState<Set<string>>(new Set());
     const [showSubmitModal, setShowSubmitModal] = useState(false);
-    const [error, setError] = useState<string | null>(null);
 
-    const lastSavedAnswers = useRef<Map<string, string>>(new Map());
-    const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const session = useExamSession(quizId);
     const camera = useWebcam();
 
-    const startExamMutation = useMutation({
-        mutationFn: () => attemptsApi.start(quizId!),
-        onSuccess: (newAttempt) => {
-            setAttempt(newAttempt);
-            setStarted(true);
-
-
-            if (document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen().catch((err) => {
-                    console.warn('Failed to enter fullscreen:', err);
-                });
-            }
-        },
-        onError: () => {
-            setError("Failed to start exam session. Please try again.");
-        },
-    });
-
-    const { enqueueSnackbar } = useSnackbar();
-
-    const submitExamMutation = useMutation({
-        mutationFn: () => attemptsApi.submitAttempt(attempt!.id),
-        onSuccess: () => {
-            // Exit fullscreen mode
-            if (document.fullscreenElement) {
-                document.exitFullscreen();
-            }
-
-            enqueueSnackbar('Exam submitted successfully! Redirecting...', {
-                variant: 'success',
-                autoHideDuration: 2000
-            });
-            setTimeout(() => {
-                navigate(`/result/${attempt!.id}`);
-            }, 1000);
-        },
-        onError: () => {
-            setError("Failed to submit exam. Please try again.");
-            enqueueSnackbar('Failed to submit exam. Please try again.', { variant: 'error' });
-            setShowSubmitModal(false);
-        },
-    });
-
-    const questions = quiz?.questions || [];
-
-    const triggerAutoSubmit = useCallback(() => {
-        if (attempt && !submitExamMutation.isPending) {
-            handleSubmitAttempt();
-        }
-    }, [attempt, submitExamMutation.isPending]);
-
     const timer = useExamTimer({
-        expiresAt: attempt?.expires_at,
-        onTimeUp: triggerAutoSubmit
+        expiresAt: session.attempt?.expires_at,
+        onTimeUp: session.submitExam
     });
 
-    const saveAnswerToServer = useCallback(async (questionId: string, answer: string) => {
-        if (!attempt) return;
-        if (lastSavedAnswers.current.get(questionId) === answer) return;
+    if (session.isLoading) return <LoadingState />;
 
-        try {
-            await attemptsApi.submitAnswer(attempt.id, { question_id: questionId, selected_answer: answer });
-            lastSavedAnswers.current.set(questionId, answer);
-        } catch (err) {
-            console.error('Failed to save answer:', err);
-            enqueueSnackbar('Failed to save answer. Please check your connection.', { variant: 'error' });
-        }
-    }, [attempt]);
-
-    const handleAnswerSelect = useCallback((questionId: string, answer: string) => {
-        setAnswers(prev => {
-            const next = new Map(prev);
-            next.set(questionId, answer);
-            return next;
-        });
-
-        if (saveTimeoutRef.current) {
-            clearTimeout(saveTimeoutRef.current);
-        }
-
-        saveTimeoutRef.current = setTimeout(() => {
-            saveAnswerToServer(questionId, answer);
-        }, 1000);
-    }, [saveAnswerToServer]);
-
-    const handleToggleMark = (questionId: string) => {
-        setMarkedQuestions(prev => {
-            const next = new Set(prev);
-            if (next.has(questionId)) {
-                next.delete(questionId);
-            } else {
-                next.add(questionId);
-            }
-            return next;
-        });
-    };
-
-    const handleQuestionNavigation = useCallback((newIndex: number) => {
-        const current = questions[currentQuestionIndex];
-        const currentAnswer = current && answers.get(current.id);
-
-        if (current && currentAnswer && lastSavedAnswers.current.get(current.id) !== currentAnswer) {
-            saveAnswerToServer(current.id, currentAnswer);
-        }
-
-        setCurrentQuestionIndex(newIndex);
-    }, [questions, currentQuestionIndex, answers, saveAnswerToServer]);
-
-    const handlePrevious = () => {
-        handleQuestionNavigation(Math.max(0, currentQuestionIndex - 1));
-    };
-
-    const handleNext = () => {
-        handleQuestionNavigation(Math.min(questions.length - 1, currentQuestionIndex + 1));
-    };
-
-
-    const handleSubmitAttempt = async () => {
-        if (!attempt) return;
-
-        const current = questions[currentQuestionIndex];
-        const currentAnswer = current && answers.get(current.id);
-
-        if (current && currentAnswer && lastSavedAnswers.current.get(current.id) !== currentAnswer) {
-            try {
-                await attemptsApi.submitAnswer(attempt.id, { question_id: current.id, selected_answer: currentAnswer });
-            } catch (e) {
-                console.error('Failed to save answer:', e);
-                enqueueSnackbar('Failed to save answer. Please check your connection.', { variant: 'error' });
-            }
-        }
-
-        submitExamMutation.mutate();
-    };
-
-
-    const currentQuestion = questions[currentQuestionIndex];
-    const questionIds = useMemo(() => questions.map((q: Question) => q.id), [questions]);
-    const isSubmitting = startExamMutation.isPending || submitExamMutation.isPending;
-    if (isLoading) return <LoadingState />;
-
-    if (fetchError || error) {
-        return <ErrorDisplay message={error || "Failed to load exam metadata."} onRetry={() => window.location.reload()} />;
+    if (session.error) {
+        return <ErrorDisplay message={session.error} onRetry={() => window.location.reload()} />;
     }
 
-    if (!started) {
+    if (!session.isStarted) {
         return (
             <WebcamPermissionModal
                 isOpen={true}
-                onStartExam={() => startExamMutation.mutate()}
+                onStartExam={session.startExam}
                 onRequestPermission={camera.requestPermission}
                 stream={camera.stream}
                 hasPermission={camera.hasPermission}
@@ -205,7 +50,7 @@ export default function TakeExam() {
     return (
         <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50', display: 'flex', flexDirection: 'column' }}>
             <ExamHeader
-                quizTitle={quiz?.title}
+                quizTitle={session.quiz?.title}
                 formattedTime={timer.formattedTime}
                 progress={timer.progress}
                 isTimeLow={timer.timeLeft < 300} // 5 mins
@@ -215,31 +60,31 @@ export default function TakeExam() {
             <Container maxWidth="xl" sx={{ flex: 1, py: 4, display: 'flex', gap: 3 }}>
                 <ExamSidebar
                     stream={camera.stream}
-                    totalQuestions={questions.length}
-                    currentIndex={currentQuestionIndex}
-                    answers={answers}
-                    markedQuestions={markedQuestions}
-                    questionIds={questionIds}
-                    onNavigate={handleQuestionNavigation}
+                    totalQuestions={session.questions.length}
+                    currentIndex={session.currentQuestionIndex}
+                    answers={session.answers}
+                    markedQuestions={session.markedQuestions}
+                    questionIds={session.questionIds}
+                    onNavigate={session.navigate}
                 />
 
                 <Box flex={1}>
-                    {currentQuestion && (
+                    {session.currentQuestion && (
                         <QuestionCard
-                            question={currentQuestion}
-                            questionNumber={currentQuestionIndex + 1}
-                            selectedAnswer={answers.get(currentQuestion.id)}
-                            onAnswerSelect={(ans) => handleAnswerSelect(currentQuestion.id, ans)}
-                            isMarked={markedQuestions.has(currentQuestion.id)}
-                            onToggleMark={() => handleToggleMark(currentQuestion.id)}
+                            question={session.currentQuestion}
+                            questionNumber={session.currentQuestionIndex + 1}
+                            selectedAnswer={session.answers.get(session.currentQuestion.id)}
+                            onAnswerSelect={(ans) => session.selectAnswer(session.currentQuestion!.id, ans)}
+                            isMarked={session.markedQuestions.has(session.currentQuestion.id)}
+                            onToggleMark={() => session.toggleMark(session.currentQuestion!.id)}
                         />
                     )}
 
                     <QuestionControls
-                        currentIndex={currentQuestionIndex}
-                        totalQuestions={questions.length}
-                        onPrevious={handlePrevious}
-                        onNext={handleNext}
+                        currentIndex={session.currentQuestionIndex}
+                        totalQuestions={session.questions.length}
+                        onPrevious={session.prevQuestion}
+                        onNext={session.nextQuestion}
                         onFinish={() => setShowSubmitModal(true)}
                     />
                 </Box>
@@ -247,15 +92,21 @@ export default function TakeExam() {
 
             <SubmitConfirmDialog
                 open={showSubmitModal}
-                answeredCount={answers.size}
-                totalQuestions={questions.length}
-                markedCount={markedQuestions.size}
-                isSubmitting={isSubmitting}
-                onConfirm={handleSubmitAttempt}
+                answeredCount={session.answers.size}
+                totalQuestions={session.questions.length}
+                markedCount={session.markedQuestions.size}
+                isSubmitting={session.isSubmitting}
+                onConfirm={session.submitExam}
                 onCancel={() => setShowSubmitModal(false)}
             />
 
-            <SubmittingOverlay open={isSubmitting && !showSubmitModal} />
+            <SubmittingOverlay open={session.isSubmitting && !showSubmitModal} />
+
+            <SecurityWarning
+                isOpen={!session.security.isFullscreen && session.isStarted}
+                onReEnter={session.security.enterFullscreen}
+                violationCount={session.security.violationCount}
+            />
         </Box>
     );
 }

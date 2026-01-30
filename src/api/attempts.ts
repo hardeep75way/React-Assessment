@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import type { Attempt, AnswerSubmit, Answer } from '@/types/attempt';
+import type { Attempt, AnswerSubmit, Answer, AttemptWithAnswers } from '@/types/attempt';
 
 export const attemptsApi = {
     start: async (quizId: string): Promise<Attempt> => {
@@ -26,8 +26,8 @@ export const attemptsApi = {
         return response.data;
     },
 
-    getAttempt: async (attemptId: string): Promise<Attempt> => {
-        const response = await apiClient.get<Attempt>(`/attempts/${attemptId}`);
+    getAttempt: async (attemptId: string): Promise<AttemptWithAnswers> => {
+        const response = await apiClient.get<AttemptWithAnswers>(`/attempts/${attemptId}`);
         return response.data;
     },
 };
